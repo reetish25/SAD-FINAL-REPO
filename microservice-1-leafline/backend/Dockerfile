@@ -17,7 +17,7 @@ RUN useradd -m -u 1000 leafline && mkdir -p /app/uploads && chown -R leafline:le
 COPY requirements.txt .
 # Install PyTorch CPU and Python packages
 RUN pip install --no-cache-dir torch torchvision --index-url https://download.pytorch.org/whl/cpu && \
-    pip install --no-cache-dir -r requirements.txt
+    pip install --no-cache-dir --extra-index-url https://download.pytorch.org/whl/cpu -r requirements.txt
 
 COPY . .
 

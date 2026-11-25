@@ -27,21 +27,22 @@ jobs:
       - name: Checkout Source Code
         uses: actions/checkout@v4
 
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v3
-
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
       - name: Determine Docker Hub Credentials
         id: auth-check
+        env:
+          DH_USER: ${{ secrets.DOCKERHUB_USERNAME }}
+          DH_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
         run: |
-          if [ -n "${{ secrets.DOCKERHUB_USERNAME }}" ] && [ -n "${{ secrets.DOCKERHUB_TOKEN }}" ]; then
-            echo "has_credentials=true" >> $GITHUB_OUTPUT
-            echo "repo_owner=${{ secrets.DOCKERHUB_USERNAME }}" >> $GITHUB_OUTPUT
+          if [ -n "$DH_USER" ] && [ -n "$DH_TOKEN" ]; then
+            echo "has_credentials=true" >> "$GITHUB_OUTPUT"
+            REPO_OWNER=$(echo "$DH_USER" | tr '[:upper:]' '[:lower:]')
+            echo "repo_owner=$REPO_OWNER" >> "$GITHUB_OUTPUT"
           else
-            echo "has_credentials=false" >> $GITHUB_OUTPUT
-            echo "repo_owner=leafline" >> $GITHUB_OUTPUT
+            echo "has_credentials=false" >> "$GITHUB_OUTPUT"
+            echo "repo_owner=leafline" >> "$GITHUB_OUTPUT"
             echo "::warning::Docker Hub secrets (DOCKERHUB_USERNAME, DOCKERHUB_TOKEN) are not set. Building images locally for validation only."
           fi
 
@@ -58,6 +59,7 @@ jobs:
         with:
           context: ./microservice-1-leafline/backend
           file: ./microservice-1-leafline/backend/Dockerfile
+          platforms: linux/amd64
           push: ${{ steps.auth-check.outputs.has_credentials == 'true' }}
           tags: |
             ${{ steps.auth-check.outputs.repo_owner }}/leafline-plant-health:latest
@@ -70,6 +72,7 @@ jobs:
         with:
           context: ./microservice-2-weather/backend
           file: ./microservice-2-weather/backend/Dockerfile
+          platforms: linux/amd64
           push: ${{ steps.auth-check.outputs.has_credentials == 'true' }}
           tags: |
             ${{ steps.auth-check.outputs.repo_owner }}/leafline-weather-service:latest
@@ -82,6 +85,7 @@ jobs:
         with:
           context: ./microservice-3-soil
           file: ./microservice-3-soil/Dockerfile
+          platforms: linux/amd64
           push: ${{ steps.auth-check.outputs.has_credentials == 'true' }}
           tags: |
             ${{ steps.auth-check.outputs.repo_owner }}/leafline-soil-service:latest
@@ -94,6 +98,7 @@ jobs:
         with:
           context: ./api-gateway
           file: ./api-gateway/Dockerfile
+          platforms: linux/amd64
           push: ${{ steps.auth-check.outputs.has_credentials == 'true' }}
           tags: |
             ${{ steps.auth-check.outputs.repo_owner }}/leafline-api-gateway:latest
@@ -106,6 +111,7 @@ jobs:
         with:
           context: ./frontend
           file: ./frontend/Dockerfile
+          platforms: linux/amd64
           push: ${{ steps.auth-check.outputs.has_credentials == 'true' }}
           tags: |
             ${{ steps.auth-check.outputs.repo_owner }}/leafline-frontend:latest

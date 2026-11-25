@@ -1,6 +1,6 @@
 # Leafline Platform — Automated Test Execution Report
 
-- **Execution Timestamp:** 2026-11-24T15:44:53.095269+00:00
+- **Execution Timestamp:** 2026-11-25T18:02:17.283738+00:00
 - **Environment:** Windows / Python 3.14 / PyTorch 2.13 CPU / FastAPI / SQLite
 - **Total Suites:** 6
 - **Suites Passed:** 6
@@ -12,11 +12,11 @@
 | # | Component / Suite | Scope | Status | Duration |
 |---|---|---|---|---|
 | 1 | Soil & Nutrient Service: Unit & Business Rules (NS-BR-01..08) | Unit / Business Rules | ✅ PASS | 0.15s |
-| 2 | Plant Health Service: PyTorch ML Inference & Severity (MobileNetV2, EfficientNetB0, Xception) | ML Inference / Grad-CAM | ✅ PASS | 11.02s |
-| 3 | Plant Health Service: REST API, Auth, Pesticide Versioning & Scans | REST API / Auth / SQLite | ✅ PASS | 14.36s |
-| 4 | Environment & Weather Service: Open-Meteo, EDPS Alternaria Risk & Sensors | Atmospheric & Epidemiological | ✅ PASS | 10.02s |
-| 5 | API Gateway & Orchestrator: Reverse Proxy Routing, Mode B Synthesis & Degradation | Gateway / Mode B Orchestrator | ✅ PASS | 8.54s |
-| 6 | Platform E2E Integration: Cross-Domain Synergy, Partial Failures & Rule Validation | E2E Cross-Service Integration | ✅ PASS | 2.05s |
+| 2 | Plant Health Service: PyTorch ML Inference & Severity (MobileNetV2, EfficientNetB0, Xception) | ML Inference / Grad-CAM | ✅ PASS | 10.5s |
+| 3 | Plant Health Service: REST API, Auth, Pesticide Versioning & Scans | REST API / Auth / SQLite | ✅ PASS | 13.44s |
+| 4 | Environment & Weather Service: Open-Meteo, EDPS Alternaria Risk & Sensors | Atmospheric & Epidemiological | ✅ PASS | 11.1s |
+| 5 | API Gateway & Orchestrator: Reverse Proxy Routing, Mode B Synthesis & Degradation | Gateway / Mode B Orchestrator | ✅ PASS | 8.81s |
+| 6 | Platform E2E Integration: Cross-Domain Synergy, Partial Failures & Rule Validation | E2E Cross-Service Integration | ✅ PASS | 2.17s |
 
 ## Detailed Execution Logs
 
@@ -43,11 +43,11 @@ microservice-1-leafline/backend/tests/test_inference.py::test_project_risk_contr
 
 ============================== warnings summary ===============================
 microservice-1-leafline/backend/tests/test_inference.py::test_project_risk_contract
-  C:\Users\kulka\OneDrive\Desktop\SAD-FINAL\microservice-1-leafline\backend\app\inference.py:441: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+  C:\Users\kulka\OneDrive\Desktop\SAD-FINAL\microservice-1-leafline\backend\app\inference.py:444: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
     now = datetime.utcnow()
 
 -- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
-======================== 4 passed, 1 warning in 8.28s =========================
+======================== 4 passed, 1 warning in 7.47s =========================
 
 ```
 
@@ -152,7 +152,7 @@ tests/test_e2e_integration.py::test_soil_rules_boundary_enforcement PASSED [ 60%
 tests/test_e2e_integration.py::test_soil_health_classification_logic PASSED [ 80%]
 tests/test_e2e_integration.py::test_cross_domain_synergy_high_risk_rule PASSED [100%]
 
-============================== 5 passed in 0.21s ==============================
+============================== 5 passed in 0.23s ==============================
 
 ```
 

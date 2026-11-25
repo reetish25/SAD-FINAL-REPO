@@ -2,6 +2,10 @@ import io
 from PIL import Image
 from fastapi.testclient import TestClient
 from app.main import app
+from app.seed import seed_database
+
+# Ensure database tables and initial test accounts exist
+seed_database()
 
 def make_test_image_bytes():
     buf = io.BytesIO()
