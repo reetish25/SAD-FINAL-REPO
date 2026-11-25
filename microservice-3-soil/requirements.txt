@@ -1,0 +1,2 @@
+# The service uses only the Python 3.10+ standard library, so there is nothing to install.
+# Tests use the standard unittest module too.

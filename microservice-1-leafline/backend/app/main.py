@@ -50,6 +50,7 @@ def get_platform_models(db: Session = Depends(get_db)):
     """Returns all 8 architectures with deployment status (available / not_deployed)."""
     return get_all_models_status(db)
 
+@app.get("/health")
 @app.get("/api/health")
 def health_check():
     return {

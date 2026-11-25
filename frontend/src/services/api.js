@@ -55,152 +55,153 @@ async function request(endpoint, options = {}) {
 }
 
 export const api = {
+  // System Health
+  getSystemHealth: () => request('/health'),
+
   // Auth
   login: (email, password) =>
-    request('/auth/login', {
+    request('/plant/auth/login', {
       method: 'POST',
       body: { email, password },
     }),
   forgotPassword: (email) =>
-    request('/auth/forgot-password', {
+    request('/plant/auth/forgot-password', {
       method: 'POST',
       body: { email },
     }),
   resetPassword: (token, newPassword) =>
-    request('/auth/reset-password', {
+    request('/plant/auth/reset-password', {
       method: 'POST',
       body: { token, new_password: newPassword },
     }),
   changePassword: (currentPassword, newPassword) =>
-    request('/auth/change-password', {
+    request('/plant/auth/change-password', {
       method: 'POST',
       body: { current_password: currentPassword, new_password: newPassword },
     }),
-  getMe: () => request('/auth/me'),
+  getMe: () => request('/plant/auth/me'),
   updateProfile: (payload) =>
-    request('/auth/profile', {
+    request('/plant/auth/profile', {
       method: 'PUT',
       body: payload,
     }),
 
-  // User Scans
+  // Service 1: Plant Health Scans
   createScan: (formData) =>
-    request('/scans', {
+    request('/plant/scans', {
       method: 'POST',
       body: formData,
     }),
   getMyScans: (plantLabel) => {
     const q = plantLabel ? `?plant_label=${encodeURIComponent(plantLabel)}` : '';
-    return request(`/scans/mine${q}`);
+    return request(`/plant/scans/mine${q}`);
   },
-  getScanDetails: (scanId) => request(`/scans/${scanId}`),
+  getScanDetails: (scanId) => request(`/plant/scans/${scanId}`),
+  getModelsList: () => request('/plant/scans/models'),
+  getPlatformSettings: () => request('/plant/scans/settings'),
 
-  // Public Settings & Models for User UI
-  getModelsList: () => request('/scans/models'),
+  // Service 2: Environment & Weather
+  getCurrentWeather: (lat = 12.9716, lon = 77.5946) =>
+    request(`/weather/weather/current?latitude=${lat}&longitude=${lon}`),
+  getWeatherForecast: (lat = 12.9716, lon = 77.5946, days = 7) =>
+    request(`/weather/weather/forecast?latitude=${lat}&longitude=${lon}&days=${days}`),
+  calculateDiseaseForecast: (payload) =>
+    request('/weather/disease-forecast/calculate', {
+      method: 'POST',
+      body: payload,
+    }),
+  getGrowthStages: () => request('/weather/disease-forecast/growth-stages'),
+  getSensors: () => request('/weather/sensors'),
+  registerSensor: (payload) =>
+    request('/weather/sensors/register', {
+      method: 'POST',
+      body: payload,
+    }),
+  submitSensorReading: (payload) =>
+    request('/weather/sensor-data', {
+      method: 'POST',
+      body: payload,
+    }),
 
-  // Admin APIs
+  // Service 3: Soil & Nutrient
+  getSoilHealth: (fieldId = 'field-demo') =>
+    request(`/soil/soil-health?field_id=${encodeURIComponent(fieldId)}`),
+  submitSoilSample: (payload) =>
+    request('/soil/soil-measurements', {
+      method: 'POST',
+      body: payload,
+    }),
+  getSoilHistory: (fieldId = 'field-demo') =>
+    request(`/soil/soil-history?field_id=${encodeURIComponent(fieldId)}`),
+
+  // Mode B: Combined Crop Health Assessment
+  submitCombinedAssessment: (formData) =>
+    request('/combined/assess', {
+      method: 'POST',
+      body: formData,
+    }),
+
+  // Service 1: Admin
   admin: {
-    getUsers: () => request('/admin/users'),
-    createUser: (payload) =>
-      request('/admin/users', {
-        method: 'POST',
-        body: payload,
-      }),
-    updateUserStatus: (userId, isActive) =>
-      request(`/admin/users/${userId}/status?is_active=${isActive}`, {
-        method: 'PUT',
-      }),
-    updateUserRole: (userId, role) =>
-      request(`/admin/users/${userId}/role`, {
-        method: 'PUT',
-        body: { role },
-      }),
-    getScans: (filters = {}) => {
-      const params = new URLSearchParams();
-      if (filters.userId) params.append('user_id', filters.userId);
-      if (filters.plantLabel) params.append('plant_label', filters.plantLabel);
-      if (filters.location) params.append('location', filters.location);
-      if (filters.status) params.append('status_filter', filters.status);
-      const qs = params.toString();
-      return request(`/admin/scans${qs ? `?${qs}` : ''}`);
+    getDashboardMetrics: () => request('/plant/admin/dashboard'),
+    getSystemStatus: () => request('/plant/admin/status'),
+    getReviewQueue: (status) => {
+      const q = status ? `?status=${encodeURIComponent(status)}` : '';
+      return request(`/plant/admin/review-queue${q}`);
     },
-    getPesticides: (includeArchived = false) =>
-      request(`/admin/pesticide-table?include_archived=${includeArchived}`),
-    createPesticide: (entry) =>
-      request('/admin/pesticide-table', {
-        method: 'POST',
-        body: entry,
-      }),
-    updatePesticide: (id, entry) =>
-      request(`/admin/pesticide-table/${id}`, {
-        method: 'PUT',
-        body: entry,
-      }),
-    getSettings: () => request('/admin/settings'),
-    updateSettings: (settingsObj) =>
-      request('/admin/settings', {
-        method: 'PUT',
-        body: settingsObj,
-      }),
-    getReviewQueue: (status = 'pending') =>
-      request(`/admin/review-queue?queue_status=${status}`),
-    takeReviewAction: (queueId, action, notes) =>
-      request(`/admin/review-queue/${queueId}/action`, {
+    actOnReviewItem: (reviewId, action, notes) =>
+      request(`/plant/admin/review-queue/${reviewId}/action`, {
         method: 'POST',
         body: { action, notes },
       }),
-    getModels: () => request('/admin/models'),
+    getSubmissions: (page = 1, limit = 20) =>
+      request(`/plant/admin/submissions?page=${page}&limit=${limit}`),
+    getPesticides: () => request('/plant/admin/pesticides'),
+    createPesticide: (data) =>
+      request('/plant/admin/pesticides', {
+        method: 'POST',
+        body: data,
+      }),
+    updatePesticide: (groupId, data) =>
+      request(`/plant/admin/pesticides/${groupId}`, {
+        method: 'PUT',
+        body: data,
+      }),
+    deactivatePesticide: (groupId) =>
+      request(`/plant/admin/pesticides/${groupId}`, {
+        method: 'DELETE',
+      }),
+    getModels: () => request('/plant/admin/models'),
     setDefaultModel: (modelId) =>
-      request(`/admin/models/${modelId}/set-default`, {
+      request(`/plant/admin/models/${modelId}/set-default`, {
         method: 'POST',
       }),
-    getRegionalSeverity: () => request('/admin/regional-severity'),
-    getSystemStatus: () => request('/admin/system-status'),
-    getAuditLogs: (action = null) => {
-      const q = action ? `?action=${encodeURIComponent(action)}` : '';
-      return request(`/admin/audit-logs${q}`);
-    },
-    exportScans: async () => {
-      const res = await fetch(`${API_BASE}/admin/export/scans`, {
-        headers: getAuthHeaders(),
-      });
-      if (!res.ok) throw new Error('Failed to export scans CSV');
-      const blob = await res.blob();
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `leafline_scans_${Date.now()}.csv`;
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-    },
-    exportUsers: async () => {
-      const res = await fetch(`${API_BASE}/admin/export/users`, {
-        headers: getAuthHeaders(),
-      });
-      if (!res.ok) throw new Error('Failed to export users CSV');
-      const blob = await res.blob();
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `leafline_users_${Date.now()}.csv`;
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-    },
-    exportPesticides: async () => {
-      const res = await fetch(`${API_BASE}/admin/export/pesticides`, {
-        headers: getAuthHeaders(),
-      });
-      if (!res.ok) throw new Error('Failed to export pesticides CSV');
-      const blob = await res.blob();
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `leafline_pesticides_${Date.now()}.csv`;
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
+    getSettings: () => request('/plant/admin/settings'),
+    updateSetting: (key, value) =>
+      request(`/plant/admin/settings/${key}`, {
+        method: 'PUT',
+        body: { value },
+      }),
+    getUsers: () => request('/plant/admin/users'),
+    createUser: (userData) =>
+      request('/plant/admin/users', {
+        method: 'POST',
+        body: userData,
+      }),
+    updateUser: (userId, userData) =>
+      request(`/plant/admin/users/${userId}`, {
+        method: 'PUT',
+        body: userData,
+      }),
+    deleteUser: (userId) =>
+      request(`/plant/admin/users/${userId}`, {
+        method: 'DELETE',
+      }),
+    getAuditLogs: (page = 1, limit = 50, action, email) => {
+      let q = `?page=${page}&limit=${limit}`;
+      if (action) q += `&action=${encodeURIComponent(action)}`;
+      if (email) q += `&email=${encodeURIComponent(email)}`;
+      return request(`/plant/admin/audit-logs${q}`);
     },
   },
 };

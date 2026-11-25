@@ -1,47 +1,73 @@
-﻿# Secrets
+# Original Unmodified Extraction Folders (Preserved for safe local reference)
+LEAFLINE/
+Leafline_Environment_Weather_Service_Implemented/
+nutrient-soil-service/
+*.zip
+
+# Secrets & Environment Files
 .env
 .env.*
 !.env.example
-backend/.env
-backend/.env.*
+*.env
 
-# Python
+# Python Virtual Environments & Caches
 venv/
 .venv/
-backend/venv/
+*/venv/
+*/.venv/
+*/*/venv/
+*/*/.venv/
 __pycache__/
+*/__pycache__/
+*/*/__pycache__/
+*/*/*/__pycache__/
 *.py[cod]
 .pytest_cache/
+*/.pytest_cache/
+*/*/.pytest_cache/
 
-# Database and uploads
+# Databases & Uploaded Runtime Files
 *.db
 *.sqlite
 *.sqlite3
-backend/uploads/
-data/
+data/*.db
+data/*.sqlite
+*/data/*.db
+*/data/*.sqlite
+backend/uploads/*
+!backend/uploads/.gitkeep
+*/backend/uploads/*
+!*/backend/uploads/.gitkeep
+uploads/*
+!uploads/.gitkeep
 
-# Node
+# Node & Frontend Build Artifacts
 node_modules/
-frontend/node_modules/
-frontend/dist/
+*/node_modules/
+*/*/node_modules/
+dist/
+*/dist/
+build/
+*/build/
 
-# Model weights
+# Large Model Weights (stored separately / on release checkpoints)
 *.pt
 *.pth
+*.onnx
+*.bin
+!backend/models/registry.json
+!microservice-1-leafline/backend/models/registry.json
 
-# Training files
-backend/models/notebooks/
-backend/new_model/
-
-# IDE
+# IDE & Editor Configurations
 .vscode/
 .idea/
+*.swp
+*.swo
 
-# OS
+# OS Temporary Files
 .DS_Store
 Thumbs.db
+desktop.ini
 
-# Local context and test assets
-leafline_context.txt
-test_images/
-*.backup
+# Logs & Test outputs
+*.log

@@ -1,0 +1,27 @@
+# Runs the web API and the background worker as two containers from one image.
+# They share one SQLite file in the "soil-data" volume. For many copies, move the database to PostgreSQL.
+services:
+  api:
+    build: .
+    env_file: .env
+    environment:
+      RUN_WORKER_IN_API: "false"
+      DB_PATH: /app/data/soil.db
+    ports:
+      - "8091:8091"
+    volumes:
+      - soil-data:/app/data
+    restart: unless-stopped
+
+  worker:
+    build: .
+    env_file: .env
+    environment:
+      DB_PATH: /app/data/soil.db
+    command: ["python", "-m", "soil_service", "worker"]
+    volumes:
+      - soil-data:/app/data
+    restart: unless-stopped
+
+volumes:
+  soil-data:

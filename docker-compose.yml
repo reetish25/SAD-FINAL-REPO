@@ -1,0 +1,158 @@
+services:
+  # ============================================================================
+  # MICROSERVICE 1: PLANT HEALTH (AI-Powered Foliar Diagnosis & Grad-CAM)
+  # Mode A Independent Port: 8000
+  # ============================================================================
+  plant-health:
+    build:
+      context: ./microservice-1-leafline/backend
+      dockerfile: Dockerfile
+    image: leafline/plant-health:1.0.0
+    container_name: leafline-plant-health
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABASE_URL=sqlite:////app/leafline.db
+      - SECRET_KEY=leafline-dev-secret-key-38f9b7c20ad418e95c7a4e2f4b3c
+      - CORS_ORIGINS=http://localhost:5173,http://localhost:8080,http://localhost:80,*
+    volumes:
+      - plant-uploads:/app/uploads
+      - plant-data:/app
+    networks:
+      - leafline-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request, sys; sys.exit(0 if urllib.request.urlopen('http://localhost:8000/health').status == 200 else 1)"]
+      interval: 20s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
+
+  # ============================================================================
+  # MICROSERVICE 2: ENVIRONMENT & WEATHER (Microclimate & Alternaria EDPS)
+  # Mode A Independent Port: 8001
+  # ============================================================================
+  weather-service:
+    build:
+      context: ./microservice-2-weather/backend
+      dockerfile: Dockerfile
+    image: leafline/weather-service:2.0.0
+    container_name: leafline-weather-service
+    ports:
+      - "8001:8001"
+    environment:
+      - DATABASE_URL=sqlite:////app/environment_weather.db
+      - ENVIRONMENT=development
+      - LOCAL_DEV_AUTH_ENABLED=true
+      - ADMIN_ACCESS_KEY=Leafline-Admin-Local-Only-Change-Me
+      - SECRET_KEY=LOCAL-ONLY-CHANGE-ME-32-CHARACTERS-MINIMUM-DEV
+      - CORS_ORIGINS=http://localhost:5173,http://localhost:8080,http://localhost:80,*
+    volumes:
+      - weather-data:/app
+    networks:
+      - leafline-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request, sys; sys.exit(0 if urllib.request.urlopen('http://localhost:8001/health').status == 200 else 1)"]
+      interval: 20s
+      timeout: 4s
+      retries: 3
+      start_period: 10s
+
+  # ============================================================================
+  # MICROSERVICE 3: SOIL & NUTRIENT (Rhizosphere Chemistry & Health Classification)
+  # Mode A Independent Port: 8091
+  # ============================================================================
+  soil-service:
+    build:
+      context: ./microservice-3-soil
+      dockerfile: Dockerfile
+    image: leafline/soil-service:1.0.0
+    container_name: leafline-soil-service
+    ports:
+      - "8091:8091"
+    environment:
+      - DB_PATH=/app/data/soil.db
+      - SEED_DEMO=true
+      - PORT=8091
+      - RUN_WORKER_IN_API=true
+    volumes:
+      - soil-data:/app/data
+    networks:
+      - leafline-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request, sys; sys.exit(0 if urllib.request.urlopen('http://localhost:8091/health').status == 200 else 1)"]
+      interval: 20s
+      timeout: 3s
+      retries: 3
+      start_period: 5s
+
+  # ============================================================================
+  # API GATEWAY & ORCHESTRATION LAYER (Mode B Coordination & Reverse Proxy)
+  # Unified API Port: 8080
+  # ============================================================================
+  api-gateway:
+    build:
+      context: ./api-gateway
+      dockerfile: Dockerfile
+    image: leafline/api-gateway:1.0.0
+    container_name: leafline-api-gateway
+    ports:
+      - "8080:8080"
+    environment:
+      - PORT=8080
+      - PLANT_SERVICE_URL=http://plant-health:8000
+      - WEATHER_SERVICE_URL=http://weather-service:8001
+      - SOIL_SERVICE_URL=http://soil-service:8091
+      - SERVICE_TIMEOUT_SECONDS=5.0
+      - CORS_ORIGINS=http://localhost:5173,http://localhost:8080,http://localhost:80,*
+    depends_on:
+      plant-health:
+        condition: service_healthy
+      weather-service:
+        condition: service_healthy
+      soil-service:
+        condition: service_healthy
+    networks:
+      - leafline-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request, sys; sys.exit(0 if urllib.request.urlopen('http://localhost:8080/health').status == 200 else 1)"]
+      interval: 20s
+      timeout: 4s
+      retries: 3
+      start_period: 5s
+
+  # ============================================================================
+  # COMMON FRONTEND (Single Unified Web Portal via Nginx)
+  # Web Portal Port: 5173
+  # ============================================================================
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    image: leafline/frontend:1.0.0
+    container_name: leafline-frontend
+    ports:
+      - "5173:80"
+    depends_on:
+      - api-gateway
+    networks:
+      - leafline-network
+    restart: unless-stopped
+
+networks:
+  leafline-network:
+    driver: bridge
+    name: leafline-internal-net
+
+volumes:
+  plant-uploads:
+    name: leafline_plant_uploads
+  plant-data:
+    name: leafline_plant_data
+  weather-data:
+    name: leafline_weather_data
+  soil-data:
+    name: leafline_soil_data

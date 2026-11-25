@@ -1,0 +1,21 @@
+name: nutrient-soil-service CI
+on:
+  push:
+    paths: ["nutrient-soil-service/**"]
+  pull_request:
+    paths: ["nutrient-soil-service/**"]
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: nutrient-soil-service
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Unit and API tests
+        run: python -m unittest discover -s tests -t . -v
+      - name: Build the container image
+        run: docker build -t nutrient-soil-service:${{ github.sha }} .
